@@ -5,6 +5,9 @@
 
 install -d "${ROOTFS_DIR}/opt/kiln-src"
 tar -xzf files/kiln-controller.tar.gz -C "${ROOTFS_DIR}/opt/kiln-src"
+if [ "${KILN_TOUCHSCREEN:-0}" = 1 ]; then
+    touch "${ROOTFS_DIR}/opt/kiln-src/.touchscreen"
+fi
 
 if [ -n "${KILN_WIFI_SSID:-}" ]; then
     conn="${ROOTFS_DIR}/etc/NetworkManager/system-connections/kiln-wifi.nmconnection"

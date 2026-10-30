@@ -192,3 +192,64 @@ section > .card { margin-top: 1rem; }
   .tabs { order: 3; flex-basis: 100%; }
   .conn { margin-left: auto; }
 }
+
+/* ---- touchscreen kiosk (?kiosk=1) ---- */
+.kiosk, .kiosk * { cursor: none !important; -webkit-user-select: none; user-select: none; }
+.kiosk input, .kiosk textarea { user-select: text; }
+.kiosk body { font-size: 17px; padding-bottom: 76px; overscroll-behavior: none; }
+.kiosk .btn { min-height: 48px; padding: .6rem 1.1rem; }
+.kiosk .btn.small { min-height: 40px; }
+.kiosk input, .kiosk select, .kiosk textarea { min-height: 46px; font-size: 1.05rem; }
+.kiosk .tabs button { padding: .7rem 1rem; font-size: 1rem; }
+.kiosk .plist li { padding: .8rem .7rem; }
+.kiosk .steps .del button { font-size: 1.6rem; padding: .2rem .6rem; }
+.kiosk input[type="checkbox"] { width: 26px; height: 26px; min-height: 0; }
+.kiosk .controls .btn.estop, .kiosk .controls .estop + p { display: none; }
+.kiosk main { padding: .6rem; }
+.kiosk-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; padding: 8px 10px;
+  background: var(--surface); border-top: 1px solid var(--border);
+}
+.kiosk-bar .btn.estop { margin: 0; padding: .7rem; min-height: 56px; }
+/* 800x480 / 1024x600 landscape panels: readout + controls side by side, chart full width */
+@media (max-height: 800px) and (min-width: 700px) {
+  .kiosk body { font-size: 16px; }
+  .kiosk .grid-dash { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: .5rem; }
+  .kiosk .readout { grid-row: 1 / 3; grid-column: 1; }
+  .kiosk .controls { grid-column: 2; }
+  .kiosk .controls h2 { display: none; }
+  .kiosk .chart-card { grid-column: 2; grid-row: 2; }
+  .kiosk .cam-card { grid-row: auto; grid-column: 1 / -1; }
+  .kiosk .temp { font-size: 4rem; margin: .2rem 0 0; }
+  .kiosk .card { padding: .6rem .75rem; }
+  .kiosk .card-head { margin-bottom: .2rem; }
+  .kiosk .stats { margin-top: .5rem; gap: .25rem .8rem; }
+  .kiosk .stats dd { font-size: .95rem; }
+  .kiosk .topbar { padding: .25rem .6rem; }
+  .kiosk .tabs button { padding: .55rem .9rem; }
+  .kiosk .osk button { min-height: 44px; }
+  .kiosk main { padding: .5rem; }
+}
+.kiosk body.osk-open .topbar { position: static; }
+.kiosk input, .kiosk textarea { scroll-margin-top: 12px; }
+
+.osk {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; padding: 8px;
+  background: var(--surface-2); border-top: 1px solid var(--border);
+  display: grid; gap: 6px; box-shadow: 0 -6px 20px rgba(0,0,0,.35);
+}
+.osk-num { left: auto; width: min(340px, 100%); border-left: 1px solid var(--border); border-top-left-radius: 12px; }
+.osk-row { display: flex; gap: 6px; }
+.osk button {
+  flex: 1 1 0; min-height: 52px; font: inherit; font-size: 1.2rem; color: var(--text);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; touch-action: manipulation;
+}
+.osk button:active { background: var(--accent); color: var(--accent-text); }
+.osk button.osk-wide { flex-grow: 1.6; font-size: 1rem; }
+.osk button[data-k="Done"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+.osk-display {
+  font-size: 1.6rem; font-weight: 650; text-align: right; padding: .3rem .6rem;
+  background: var(--surface); border-radius: 8px; font-variant-numeric: tabular-nums;
+}
+.osk-display.placeholder { color: var(--muted); }
+body.osk-open { padding-bottom: 340px; }

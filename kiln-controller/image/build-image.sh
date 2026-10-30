@@ -13,6 +13,7 @@
 #   KILN_WIFI_COUNTRY     two-letter country code (default: US)
 #   KILN_HOTSPOT_PASSWORD setup hotspot password (default: kilnsetup)
 #   KILN_TIMEZONE         e.g. America/Chicago (default: Etc/UTC)
+#   KILN_TOUCHSCREEN      1 = show the UI full-screen on an attached touchscreen (kiosk)
 #   KILN_HOSTNAME         default: kiln  (browse to http://kiln.local)
 #   PIGEN_REF             pi-gen branch/tag (default: arm64 = latest 64-bit Raspberry Pi OS)
 set -euo pipefail
@@ -44,6 +45,7 @@ cat > "$PG/stage-kiln/00-kiln/files/kiln-build.env" <<ENV
 KILN_WIFI_SSID=$(printf %q "${KILN_WIFI_SSID:-}")
 KILN_WIFI_PASSWORD=$(printf %q "${KILN_WIFI_PASSWORD:-}")
 KILN_HOTSPOT_PASSWORD=$(printf %q "${KILN_HOTSPOT_PASSWORD:-}")
+KILN_TOUCHSCREEN=$(printf %q "${KILN_TOUCHSCREEN:-0}")
 ENV
 
 cat > "$PG/config" <<CFG

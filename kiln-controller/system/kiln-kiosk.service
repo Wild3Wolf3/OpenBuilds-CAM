@@ -1,0 +1,26 @@
+[Unit]
+Description=Kiln touchscreen kiosk
+After=systemd-user-sessions.service kiln-controller.service
+Conflicts=getty@tty1.service
+
+[Service]
+User=kiosk
+PAMName=login
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+UtmpIdentifier=tty1
+UtmpMode=user
+StandardInput=tty-fail
+StandardOutput=journal
+StandardError=journal
+Environment=XDG_SESSION_TYPE=wayland
+EnvironmentFile=-/etc/default/kiln-kiosk
+# -d: no window decorations, -s: allow switching VTs for maintenance
+ExecStart=/usr/bin/cage -d -s -- /usr/local/sbin/kiln-kiosk.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=graphical.target

@@ -12,6 +12,10 @@ on:
         description: "Build the Raspberry Pi image"
         type: boolean
         default: true
+      touchscreen:
+        description: "Include the touchscreen kiosk (full-screen UI on an attached display)"
+        type: boolean
+        default: false
 
 jobs:
   test:
@@ -41,6 +45,7 @@ jobs:
           KILN_WIFI_PASSWORD: ${{ secrets.KILN_WIFI_PASSWORD }}
           KILN_WIFI_COUNTRY: ${{ vars.KILN_WIFI_COUNTRY || 'US' }}
           KILN_TIMEZONE: ${{ vars.KILN_TIMEZONE || 'Etc/UTC' }}
+          KILN_TOUCHSCREEN: ${{ inputs.touchscreen && '1' || vars.KILN_TOUCHSCREEN || '0' }}
         run: kiln-controller/image/build-image.sh
       - uses: actions/upload-artifact@v4
         with:

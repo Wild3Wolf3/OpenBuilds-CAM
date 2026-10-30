@@ -22,6 +22,7 @@
 | **Wi-Fi setup hotspot** + Wi-Fi page in the UI | Works with no keyboard or monitor |
 | Optional **password login** | Stops anyone on the Wi-Fi from starting your kiln |
 | **Simulation mode** | Try profiles and learn the UI with no hardware |
+| Optional **touchscreen kiosk** with on-screen keyboard and pinned E-stop bar | Control the kiln at the kiln, no phone needed |
 
 ## Suggested next steps
 
@@ -39,7 +40,7 @@
    tables. Show "equivalent cone" (heat-work) live during the firing.
 8. **Delayed start**: begin at a set time, for example off-peak electricity at night.
 9. **Firing notes and photos** attached to each history entry: glaze, clay body, results.
-10. **Kiosk touchscreen** on the enclosure, showing the same web UI in Chromium kiosk mode.
+10. **Screen dimming** for the touchscreen: turn the backlight down when idle, and wake it on touch or on an alarm.
 11. **Off-site access** through Tailscale or a Cloudflare Tunnel, rather than port-forwarding.
     Don't expose the kiln directly to the internet.
 12. **Thermocouple drift tracking**: log witness-cone results and suggest an offset correction.

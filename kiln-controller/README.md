@@ -10,6 +10,12 @@ the Instructables
 > Use it with an independent hardware over-temperature limit and a hard-wired E-stop, as described
 > in the [wiring guide](docs/WIRING.md). Never leave a firing unattended for long periods.
 
+![Dashboard](docs/screenshots/dashboard.png)
+
+| Touchscreen (800×480) | On-screen keypad | Phone |
+|---|---|---|
+| ![Touchscreen dashboard](docs/screenshots/touchscreen-dashboard.png) | ![Touchscreen keypad](docs/screenshots/touchscreen-keypad.png) | ![Phone](docs/screenshots/phone.png) |
+
 ## Features
 
 * **Dashboard**: big live temperature readout, setpoint, heater power, current step, time
@@ -32,6 +38,8 @@ the Instructables
   pick your Wi-Fi in Settings. The UI is reachable at **http://kiln.local** (mDNS).
 * **Notifications** through [ntfy.sh](https://ntfy.sh) (free phone push): firing started, finished,
   alarm, and "cool enough to open".
+* Optional **touchscreen**: the UI full-screen on the Pi's own display, with large touch targets, an
+  always-visible EMERGENCY STOP bar and an on-screen keyboard/keypad. See [Touchscreen](#optional-touchscreen).
 * Optional **password login**, °F/°C display, and a **simulation mode** for trying it without hardware.
 
 ## Documentation
@@ -83,6 +91,27 @@ sudo ./install.sh
 sudo reboot          # first time only, to enable SPI
 ```
 
+## Optional touchscreen
+
+Add a Raspberry Pi Touch Display 2, the original 7" display or an HDMI touchscreen (see the
+[parts list](docs/PARTS_LIST.md#e-optional-touchscreen)) and turn on kiosk mode:
+
+* **Image build:** set `KILN_TOUCHSCREEN=1` for `build-image.sh`, or tick *touchscreen* when
+  running the GitHub workflow.
+* **Existing install:** `sudo ./install.sh --touchscreen`.
+
+At boot, the screen opens the dashboard full-screen. It runs Chromium inside the minimal `cage`
+kiosk compositor, so no desktop is installed. Kiosk mode (`http://kiln.local/?kiosk=1`) adds bigger
+buttons, a pinned EMERGENCY STOP bar on every page, a number pad for temperatures and times, and a
+full keyboard for names and Wi-Fi passwords. If you set a login password, enter it once on the
+screen; the login lasts 90 days.
+
+Rotation: the Touch Display 2 is portrait by default. For landscape, add
+`video=DSI-1:720x1280@60,rotate=270` to the end of the line in `/boot/firmware/cmdline.txt`. For
+other screens, follow the screen maker's setup guide (some need a `dtoverlay=` line in
+`config.txt`). To change the URL, put `KILN_KIOSK_URL=http://localhost:8080/?kiosk=1` in
+`/etc/default/kiln-kiosk`.
+
 ## Try it without hardware
 
 ```bash
@@ -112,9 +141,9 @@ kilnctl/
   camera.py       Picamera2 / OpenCV MJPEG
   web.py          REST API, WebSocket, camera stream, auth
   wifi.py         nmcli wrapper
-  static/         web UI (plain HTML/JS/CSS, no internet needed)
+  static/         web UI (plain HTML/JS/CSS, no internet needed); kiosk.js = touchscreen mode
   presets/        built-in profiles (°C, minutes)
-system/           systemd units, hotspot script, polkit rule, watchdog
+system/           systemd units, hotspot script, touchscreen kiosk, polkit rule, watchdog
 image/            pi-gen stage + build script
 ```
 

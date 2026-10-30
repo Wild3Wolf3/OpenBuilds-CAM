@@ -53,7 +53,22 @@ the kiln's data plate, or work it out as watts ÷ volts.
 | 24 | Long CSI ribbon cable, 500 mm–1 m | 1 | A Pi 5 needs the 22-pin to 15-pin "mini" cable | $5–8 |
 | 25 | Camera mount / small project box, and a **welding-glass filter (shade 5–8)** or ND filter | 1 | Aim at a peephole or cone pack from **≥ 30 cm away**. The filter stops the glow from washing out the image above about 900 °C. Never put the camera in the peephole. | $10–20 |
 
-## E. Optional extras
+## E. Optional touchscreen
+
+The kiln UI runs full-screen on the Pi itself, with big touch buttons, a pinned EMERGENCY STOP bar
+and an on-screen keyboard. Enable it with `KILN_TOUCHSCREEN=1` when building the image, or run
+`sudo ./install.sh --touchscreen`.
+
+| # | Part | Qty | Notes | ≈ Price |
+|---|------|-----|-------|---------|
+| 26 | **Raspberry Pi Touch Display 2 (7", 720×1280)** *(recommended)*, or the original official 7" Touch Display (800×480), or a 5"/7" capacitive HDMI touchscreen (e.g. Waveshare, 800×480 or 1024×600) | 1 | The official displays connect by DSI ribbon, so the camera keeps the CSI port. HDMI screens also need a USB cable for touch. | $45–65 |
+| 27 | Display mounting: a panel-mount bezel or case that fits a cut-out in the enclosure door, or a separate small case on an arm | 1 | Keep the screen away from kiln heat. The Pi and display are rated to about 50 °C. | $10–25 |
+| 28 | Longer DSI cable (200–500 mm), if the display isn't directly on the Pi | 1 | A Pi 5 needs the "standard-to-mini" DSI cable | $5–8 |
+| 29 | Bigger power supply: **5 V 3 A** minimum for a Pi 4 + display, or the **27 W (5 V 5 A) USB-C PSU** for a Pi 5 | — | Official displays are powered from the Pi's 5 V header pins (use pin 4 if pin 2 already feeds the SSR driver) | +$5 |
+
+Adds **≈ $60–100** to the build.
+
+## F. Optional extras
 
 | Part | Why | ≈ Price |
 |------|-----|---------|
@@ -62,10 +77,10 @@ the kiln's data plate, or work it out as watts ÷ volts.
 | UPS HAT / mini UPS for the Pi | Rides through short brownouts and keeps logging | $30–45 |
 | SCT-013 current clamp + ADS1115 ADC | Measures real element current to catch a failing element early | $15 |
 | Lid/door microswitch | Lets the software block heating while the lid is open | $5 |
-| 5" HDMI/DSI touchscreen | Local display in kiosk mode | $40–70 |
 
 ## Typical total
 
 * Controller + switching + enclosure (one 40 A circuit): **≈ $300–450**
 * Camera: **+ $40–60**
 * Independent over-temperature limit: **+ $35–80** (recommended)
+* Touchscreen: **+ $60–100** (optional)
