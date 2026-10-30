@@ -1,0 +1,11 @@
+{
+  "name": "Drying / candling only",
+  "description": "Gently drives off water from damp greenware before a bisque.",
+  "steps": [
+    {
+      "target": 82,
+      "minutes": 61,
+      "hold": 480
+    }
+  ]
+}

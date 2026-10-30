@@ -1,0 +1,26 @@
+{
+  "name": "Glass - Slump",
+  "description": "Slump into a mold.",
+  "steps": [
+    {
+      "target": 538,
+      "minutes": 186,
+      "hold": 10
+    },
+    {
+      "target": 677,
+      "minutes": 50,
+      "hold": 15
+    },
+    {
+      "target": 482,
+      "minutes": 0,
+      "hold": 60
+    },
+    {
+      "target": 371,
+      "minutes": 121,
+      "hold": 0
+    }
+  ]
+}

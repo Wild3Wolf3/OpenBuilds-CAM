@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#16120f">
+<title>Kiln Controller</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 3c3 6 9 9 9 17a9 9 0 0 1-18 0c0-5 3-7 4-11 2 3 3 4 5 4-1-4-1-7 0-10z' fill='%23f07a2a'/></svg>">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3c3 6 9 9 9 17a9 9 0 0 1-18 0c0-5 3-7 4-11 2 3 3 4 5 4-1-4-1-7 0-10z"/></svg>
+    <span id="kiln-name">Kiln</span>
+    <span id="sim-badge" class="badge warn" hidden>SIMULATION</span>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="dash" aria-selected="true">Dashboard</button>
+    <button role="tab" data-tab="profiles">Profiles</button>
+    <button role="tab" data-tab="history">History</button>
+    <button role="tab" data-tab="settings">Settings</button>
+  </nav>
+  <span id="conn" class="conn" title="Connection">●</span>
+</header>
+
+<main>
+<!-- ======================= DASHBOARD ======================= -->
+<section id="tab-dash" class="tab">
+  <div id="alert" class="alert" hidden>
+    <span id="alert-text"></span>
+    <button id="btn-ack" class="btn small">Acknowledge</button>
+  </div>
+
+  <div class="grid-dash">
+    <div class="card readout">
+      <div class="state-row"><span id="state" class="pill">idle</span><span id="catchup" class="badge" hidden>catching up</span></div>
+      <div class="temp"><span id="temp">--</span><span class="unit u-deg"></span></div>
+      <div class="sub">Setpoint <b id="setpoint">--</b></div>
+      <div class="meter" title="Heater power"><div id="duty-bar"></div></div>
+      <div class="sub"><span id="duty">0</span>% power <span id="heater-dot" class="dot"></span> · contactor <b id="contactor">open</b></div>
+      <dl class="stats">
+        <div><dt>Profile</dt><dd id="s-profile">—</dd></div>
+        <div><dt>Step</dt><dd id="s-step">—</dd></div>
+        <div><dt>Elapsed</dt><dd id="s-elapsed">—</dd></div>
+        <div><dt>Remaining</dt><dd id="s-remaining">—</dd></div>
+        <div><dt>Energy</dt><dd id="s-energy">—</dd></div>
+        <div><dt>Cost</dt><dd id="s-cost">—</dd></div>
+      </dl>
+    </div>
+
+    <div class="card controls">
+      <h2>Firing</h2>
+      <div id="start-box">
+        <label for="start-profile">Profile</label>
+        <div class="row">
+          <select id="start-profile"></select>
+          <button id="btn-start" class="btn primary">Start firing</button>
+        </div>
+        <p id="start-summary" class="muted small"></p>
+      </div>
+      <div id="run-box" class="row wrap" hidden>
+        <button id="btn-hold" class="btn">Hold</button>
+        <button id="btn-skip" class="btn">Skip step</button>
+        <button id="btn-stop" class="btn">Stop firing</button>
+      </div>
+      <button id="btn-estop" class="btn estop">EMERGENCY STOP</button>
+      <p class="muted small">Emergency stop cuts the SSR and opens the safety contactor immediately.</p>
+    </div>
+
+    <div class="card chart-card">
+      <div class="card-head"><h2>Temperature</h2>
+        <span class="legend"><i class="l-plan"></i>planned <i class="l-actual"></i>actual</span></div>
+      <canvas id="chart" height="280"></canvas>
+    </div>
+
+    <div class="card cam-card">
+      <div class="card-head"><h2>Camera</h2>
+        <a id="cam-snap" class="small" href="/camera/snapshot.jpg" target="_blank" hidden>snapshot</a></div>
+      <div id="cam-wrap" class="cam"><span class="muted">No camera connected</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= PROFILES ======================= -->
+<section id="tab-profiles" class="tab" hidden>
+  <div class="grid-prof">
+    <div class="card">
+      <div class="card-head"><h2>Profiles</h2><button id="btn-new" class="btn small primary">+ New</button></div>
+      <ul id="profile-list" class="plist"></ul>
+    </div>
+
+    <div class="card editor">
+      <div class="row wrap">
+        <div class="grow"><label for="p-name">Name</label><input id="p-name" maxlength="60" placeholder="e.g. My Cone 6 Glaze"></div>
+      </div>
+      <label for="p-desc">Notes</label>
+      <textarea id="p-desc" rows="2" maxlength="500" placeholder="Clay body, glaze, cone pack placement…"></textarea>
+
+      <div class="card-head"><h3>Steps <span id="step-count" class="muted"></span></h3>
+        <span class="muted small">Step 1 starts from the kiln's current temperature. Time 0:00 = as fast as possible.</span></div>
+      <div class="table-wrap">
+        <table class="steps">
+          <thead><tr><th>#</th><th>Target <span class="u-deg"></span></th><th>Ramp time<br><span class="muted">h : m</span></th>
+            <th>Rate<br><span class="muted"><span class="u-deg"></span>/hr</span></th><th>Hold<br><span class="muted">h : m</span></th><th></th></tr></thead>
+          <tbody id="steps"></tbody>
+        </table>
+      </div>
+      <button id="btn-add-step" class="btn">+ Add step</button>
+      <p class="small">Total program time: <b id="p-total">0:00</b> · Peak: <b id="p-peak">—</b></p>
+      <canvas id="p-chart" height="200"></canvas>
+      <p id="p-error" class="error" hidden></p>
+      <div class="row wrap actions">
+        <button id="btn-save" class="btn primary">Save</button>
+        <button id="btn-saveas" class="btn">Save as new</button>
+        <button id="btn-fire" class="btn">Fire this profile</button>
+        <button id="btn-export" class="btn">Export</button>
+        <label class="btn file-btn">Import<input id="p-import" type="file" accept=".json,application/json"></label>
+        <span class="grow"></span>
+        <button id="btn-delete" class="btn danger-text">Delete</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= HISTORY ======================= -->
+<section id="tab-history" class="tab" hidden>
+  <div class="card">
+    <h2>Firing history</h2>
+    <div class="table-wrap">
+      <table class="list">
+        <thead><tr><th>Started</th><th>Profile</th><th>Result</th><th>Duration</th><th>Peak</th><th>Energy</th></tr></thead>
+        <tbody id="history"></tbody>
+      </table>
+    </div>
+  </div>
+  <div id="run-detail" class="card" hidden>
+    <div class="card-head"><h2 id="rd-title"></h2>
+      <span class="row"><a id="rd-csv" class="btn small" href="#">Download CSV</a><button id="rd-delete" class="btn small danger-text">Delete</button></span></div>
+    <p id="rd-msg" class="muted"></p>
+    <canvas id="rd-chart" height="260"></canvas>
+    <div id="rd-snaps" class="snaps"></div>
+  </div>
+</section>
+
+<!-- ======================= SETTINGS ======================= -->
+<section id="tab-settings" class="tab" hidden>
+  <form id="settings-form" class="settings"></form>
+  <div class="row wrap actions">
+    <button id="btn-save-settings" class="btn primary">Save settings</button>
+    <button id="btn-restart" class="btn">Restart controller</button>
+    <span id="settings-msg" class="muted"></span>
+  </div>
+
+  <div class="card">
+    <h2>Wi-Fi</h2>
+    <p id="wifi-status" class="muted">Checking…</p>
+    <button id="btn-scan" class="btn small">Scan for networks</button>
+    <ul id="wifi-list" class="plist"></ul>
+    <div id="wifi-join" class="row wrap" hidden>
+      <input id="wifi-ssid" placeholder="Network name">
+      <input id="wifi-pass" type="password" placeholder="Password">
+      <button id="btn-join" class="btn primary">Connect</button>
+    </div>
+    <p id="wifi-msg" class="muted small"></p>
+  </div>
+</section>
+</main>
+
+<div id="login" class="overlay" hidden>
+  <form id="login-form" class="card">
+    <h2>Kiln login</h2>
+    <input id="login-pass" type="password" placeholder="Password" autocomplete="current-password">
+    <button class="btn primary">Log in</button>
+    <p id="login-err" class="error" hidden>Wrong password</p>
+  </form>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+<script src="/static/app.js"></script>
+</body>
+</html>

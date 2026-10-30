@@ -1,0 +1,23 @@
+[Unit]
+Description=Kiln controller (web UI, PID, safety)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=notify
+NotifyAccess=main
+User=kiln
+SupplementaryGroups=gpio spi video netdev
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+WorkingDirectory=/opt/kiln-controller
+ExecStart=/usr/bin/python3 -m kilnctl --data-dir /var/lib/kiln
+StateDirectory=kiln
+# If the control loop ever hangs, systemd kills and restarts it. GPIO
+# outputs drop to off when the process dies, so the SSR opens.
+WatchdogSec=30
+Restart=always
+RestartSec=3
+Nice=-5
+
+[Install]
+WantedBy=multi-user.target

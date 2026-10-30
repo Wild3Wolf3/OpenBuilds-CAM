@@ -1,0 +1,55 @@
+name: Kiln controller
+
+on:
+  push:
+    paths: ["kiln-controller/**", ".github/workflows/kiln-controller.yml"]
+    tags: ["kiln-v*"]
+  pull_request:
+    paths: ["kiln-controller/**"]
+  workflow_dispatch:
+    inputs:
+      build_image:
+        description: "Build the Raspberry Pi image"
+        type: boolean
+        default: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install aiohttp pytest
+      - run: python -m pytest -q kiln-controller/tests
+
+  image:
+    needs: test
+    if: github.event_name == 'workflow_dispatch' && inputs.build_image || startsWith(github.ref, 'refs/tags/kiln-v')
+    # Native arm64 runner: pi-gen builds without qemu emulation.
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image with pi-gen
+        env:
+          # Optional repository secrets. Anything baked in here ends up
+          # inside the image file, so don't publish images built with Wi-Fi.
+          KILN_ADMIN_PASSWORD: ${{ secrets.KILN_ADMIN_PASSWORD }}
+          KILN_WIFI_SSID: ${{ secrets.KILN_WIFI_SSID }}
+          KILN_WIFI_PASSWORD: ${{ secrets.KILN_WIFI_PASSWORD }}
+          KILN_WIFI_COUNTRY: ${{ vars.KILN_WIFI_COUNTRY || 'US' }}
+          KILN_TIMEZONE: ${{ vars.KILN_TIMEZONE || 'Etc/UTC' }}
+        run: kiln-controller/image/build-image.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kiln-controller-image
+          path: kiln-controller/image/build/pi-gen/deploy/*.img.xz
+          compression-level: 0
+          retention-days: 30
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/kiln-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: kiln-controller/image/build/pi-gen/deploy/*.img.xz

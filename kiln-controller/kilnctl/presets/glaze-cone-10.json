@@ -1,0 +1,21 @@
+{
+  "name": "Glaze - Cone 10 (high fire)",
+  "description": "High-fire stoneware. Ends ~1285 C. Only if your kiln and elements are rated for it.",
+  "steps": [
+    {
+      "target": 121,
+      "minutes": 75,
+      "hold": 0
+    },
+    {
+      "target": 1150,
+      "minutes": 309,
+      "hold": 0
+    },
+    {
+      "target": 1285,
+      "minutes": 135,
+      "hold": 10
+    }
+  ]
+}

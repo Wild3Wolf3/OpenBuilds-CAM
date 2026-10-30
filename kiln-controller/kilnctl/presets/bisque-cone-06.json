@@ -1,0 +1,26 @@
+{
+  "name": "Bisque - Cone 06",
+  "description": "Standard bisque. Ends ~999 C (cone 06).",
+  "steps": [
+    {
+      "target": 93,
+      "minutes": 54,
+      "hold": 60
+    },
+    {
+      "target": 593,
+      "minutes": 300,
+      "hold": 0
+    },
+    {
+      "target": 940,
+      "minutes": 104,
+      "hold": 0
+    },
+    {
+      "target": 999,
+      "minutes": 59,
+      "hold": 10
+    }
+  ]
+}

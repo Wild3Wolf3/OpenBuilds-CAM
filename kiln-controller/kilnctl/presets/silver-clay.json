@@ -1,0 +1,11 @@
+{
+  "name": "Metal clay - Fine silver",
+  "description": "Fine silver clay (e.g. PMC3 / Art Clay) sinter at 800 C. Check your clay's instructions.",
+  "steps": [
+    {
+      "target": 800,
+      "minutes": 0,
+      "hold": 30
+    }
+  ]
+}

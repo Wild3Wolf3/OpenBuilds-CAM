@@ -1,0 +1,31 @@
+{
+  "name": "Glaze - Cone 6 + slow cool",
+  "description": "Cone 6 with a controlled cool for matte and crystalline-leaning glazes.",
+  "steps": [
+    {
+      "target": 121,
+      "minutes": 75,
+      "hold": 0
+    },
+    {
+      "target": 1100,
+      "minutes": 294,
+      "hold": 0
+    },
+    {
+      "target": 1222,
+      "minutes": 122,
+      "hold": 10
+    },
+    {
+      "target": 1000,
+      "minutes": 89,
+      "hold": 0
+    },
+    {
+      "target": 760,
+      "minutes": 180,
+      "hold": 0
+    }
+  ]
+}

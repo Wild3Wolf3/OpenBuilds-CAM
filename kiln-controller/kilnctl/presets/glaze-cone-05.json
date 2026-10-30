@@ -1,0 +1,21 @@
+{
+  "name": "Glaze - Cone 05 (low fire)",
+  "description": "Low-fire earthenware glaze. Ends ~1031 C.",
+  "steps": [
+    {
+      "target": 121,
+      "minutes": 75,
+      "hold": 0
+    },
+    {
+      "target": 960,
+      "minutes": 252,
+      "hold": 0
+    },
+    {
+      "target": 1031,
+      "minutes": 71,
+      "hold": 10
+    }
+  ]
+}

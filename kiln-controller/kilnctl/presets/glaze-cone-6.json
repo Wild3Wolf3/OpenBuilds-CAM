@@ -1,0 +1,21 @@
+{
+  "name": "Glaze - Cone 6 (mid fire)",
+  "description": "Mid-range stoneware/porcelain glaze. Ends ~1222 C with a 10 minute soak.",
+  "steps": [
+    {
+      "target": 121,
+      "minutes": 75,
+      "hold": 0
+    },
+    {
+      "target": 1100,
+      "minutes": 294,
+      "hold": 0
+    },
+    {
+      "target": 1222,
+      "minutes": 122,
+      "hold": 10
+    }
+  ]
+}

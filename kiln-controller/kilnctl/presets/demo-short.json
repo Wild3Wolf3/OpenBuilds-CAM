@@ -1,0 +1,11 @@
+{
+  "name": "Test - short 200 C",
+  "description": "Quick test run to verify wiring and tuning.",
+  "steps": [
+    {
+      "target": 200,
+      "minutes": 27,
+      "hold": 5
+    }
+  ]
+}

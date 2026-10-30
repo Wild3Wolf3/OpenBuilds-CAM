@@ -1,0 +1,12 @@
+[Unit]
+Description=Start a Wi-Fi setup hotspot if the kiln has no network
+After=NetworkManager.service
+Wants=NetworkManager.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=-/etc/default/kiln-hotspot
+ExecStart=/usr/local/sbin/kiln-hotspot.sh
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,26 @@
+{
+  "name": "Bisque - Cone 04 (slow)",
+  "description": "Slow bisque for greenware with a long candling/drying hold. Ends ~1063 C (Orton cone 04 at 60 C/hr).",
+  "steps": [
+    {
+      "target": 93,
+      "minutes": 54,
+      "hold": 120
+    },
+    {
+      "target": 593,
+      "minutes": 300,
+      "hold": 0
+    },
+    {
+      "target": 1000,
+      "minutes": 122,
+      "hold": 0
+    },
+    {
+      "target": 1063,
+      "minutes": 63,
+      "hold": 10
+    }
+  ]
+}

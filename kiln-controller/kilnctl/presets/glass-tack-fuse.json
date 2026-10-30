@@ -1,0 +1,26 @@
+{
+  "name": "Glass - Tack fuse",
+  "description": "Tack fuse keeps pieces' shape and texture.",
+  "steps": [
+    {
+      "target": 677,
+      "minutes": 177,
+      "hold": 30
+    },
+    {
+      "target": 760,
+      "minutes": 0,
+      "hold": 10
+    },
+    {
+      "target": 482,
+      "minutes": 0,
+      "hold": 60
+    },
+    {
+      "target": 371,
+      "minutes": 121,
+      "hold": 0
+    }
+  ]
+}

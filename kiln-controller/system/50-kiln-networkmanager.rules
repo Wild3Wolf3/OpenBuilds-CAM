@@ -1,0 +1,6 @@
+// Let the kiln web service manage Wi-Fi (scan / connect) without root.
+polkit.addRule(function (action, subject) {
+    if (action.id.indexOf("org.freedesktop.NetworkManager.") == 0 && subject.user == "kiln") {
+        return polkit.Result.YES;
+    }
+});
