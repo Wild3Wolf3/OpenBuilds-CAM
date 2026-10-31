@@ -40,7 +40,14 @@ the Instructables
   alarm, and "cool enough to open".
 * Optional **touchscreen**: the UI full-screen on the Pi's own display, with large touch targets, an
   always-visible EMERGENCY STOP bar and an on-screen keyboard/keypad. See [Touchscreen](#optional-touchscreen).
-* Optional **password login**, °F/°C display, and a **simulation mode** for trying it without hardware.
+* **Passcodes**, each optional and set in Settings → Passcodes:
+  * **Interface passcode**: you must unlock the controller on any device before using it. A
+    digits-only code gives a number pad on the touchscreen, and the touchscreen can **auto-lock
+    after being idle** or be locked with the 🔒 button.
+  * **Firing lock PIN** (4–8 digits): while a firing is running, Hold, Resume, Skip, Stop and
+    settings changes ask for the PIN. Starting a firing doesn't. After 5 wrong tries the PIN is
+    locked out for 60 s. An entered PIN is remembered for 2 minutes on that device.
+  * **EMERGENCY STOP never needs a code.** On a locked touchscreen it stays on screen and still works.
 
 ## Documentation
 

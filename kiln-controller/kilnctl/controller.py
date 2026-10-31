@@ -324,6 +324,7 @@ class Controller:
             "heater_on": self.hw.heater.is_on,
             "contactor_on": self.hw.contactor.is_on,
             "catching_up": self.catching_up,
+            "control_locked": firing and bool(self.cfg["control_pin_hash"]),
             "run_id": self.run_id,
             "profile": self.profile["name"] if self.profile else None,
             "step": step,

@@ -32,19 +32,45 @@ function fmtDur(sec) {
 }
 
 // ------------------------------------------------------------------ api --
+const PIN_TTL = 2 * 60 * 1000;  // remember an entered firing-lock PIN this long
+
 async function api(path, opts = {}) {
   const init = { method: opts.method || "GET", headers: {} };
   if (opts.body !== undefined) {
     init.body = JSON.stringify(opts.body);
     init.headers["Content-Type"] = "application/json";
   }
+  if (init.method !== "GET" && S.pin && Date.now() - S.pin.t < PIN_TTL) init.headers["X-Kiln-Pin"] = S.pin.v;
   const res = await fetch(path, init);
   if (res.status === 401) { showLogin(); throw new Error("login required"); }
   const text = await res.text();
   let data = null;
   try { data = text ? JSON.parse(text) : null; } catch { data = { error: text }; }
+  if (data && data.pin_required) {
+    // Firing lock: ask for the PIN and retry. 429 = too many wrong tries.
+    S.pin = null;
+    if (res.status === 429) throw new Error(data.error);
+    const pin = await askPin(data.error);
+    if (pin == null) throw new Error("cancelled");
+    S.pin = { v: pin, t: Date.now() };
+    return api(path, opts);
+  }
   if (!res.ok) throw new Error((data && data.error) || text || res.statusText);
   return data;
+}
+
+function askPin(message) {
+  return new Promise((resolve) => {
+    const dlg = $("pin-dialog"), input = $("pin-input");
+    $("pin-msg").textContent = message === "Firing lock PIN required" ? "Enter the firing lock PIN to change a running firing." : message;
+    $("pin-msg").classList.toggle("error", message !== "Firing lock PIN required");
+    input.value = "";
+    dlg.hidden = false;
+    input.focus();
+    const done = (value) => { dlg.hidden = true; $("pin-form").onsubmit = $("pin-cancel").onclick = null; resolve(value); };
+    $("pin-form").onsubmit = (e) => { e.preventDefault(); done(input.value); };
+    $("pin-cancel").onclick = () => done(null);
+  });
 }
 
 function toast(msg, ms = 3500) {
@@ -56,7 +82,7 @@ function toast(msg, ms = 3500) {
 }
 
 async function act(fn) {
-  try { return await fn(); } catch (e) { if (e.message !== "login required") toast(e.message, 6000); }
+  try { return await fn(); } catch (e) { if (!["login required", "cancelled"].includes(e.message)) toast(e.message, 6000); }
 }
 
 // ----------------------------------------------------------------- tabs --
@@ -180,6 +206,7 @@ function renderStatus(st, prev) {
   $("start-box").hidden = active;
   $("run-box").hidden = !active;
   $("btn-hold").textContent = st.state === "holding" ? "Resume" : "Hold";
+  $("lock-note").hidden = !st.control_locked;
 
   let alertText = "";
   if (st.sensor_error) alertText = "Thermocouple: " + st.sensor_error;
@@ -507,7 +534,11 @@ const SETTINGS = [
     ["kiln_name", "Kiln name", "text"],
     ["units", "Temperature units", "select:F,C"],
     ["notify_url", "Notification URL", "text", "e.g. https://ntfy.sh/your-secret-topic - alerts on start, finish, errors and when cool"],
-    ["new_password", "Web login password", "password", "Leave blank to keep. Enter a single space to remove the password."],
+  ]],
+  ["Passcodes", [
+    ["new_password", "Interface passcode (login)", "password", "Needed to open the controller on any device. Use digits only (4 or more) to get a keypad on the touchscreen. Leave blank to keep the current one; enter a single space to remove it."],
+    ["kiosk_lock_minutes", "Touchscreen auto-lock after idle (minutes)", "num", "0 = never. Needs an interface passcode. EMERGENCY STOP still works on a locked screen."],
+    ["new_control_pin", "Firing lock PIN (4–8 digits)", "pin", "When set, holding, skipping, stopping or changing settings during a firing asks for this PIN. EMERGENCY STOP never does. Leave blank to keep; enter a single space to remove."],
   ]],
   ["Firing control", [
     ["pid_kp", "PID Kp (power per °C error)", "num"],
@@ -580,11 +611,15 @@ function renderSettings() {
           input.value = String(v[key]);
         } else {
           input = document.createElement("input");
-          input.type = type === "password" ? "password" : type === "text" ? "text" : "number";
-          if (type !== "text" && type !== "password") input.step = "any";
+          const secret = type === "password" || type === "pin";
+          input.type = secret ? "password" : type === "text" ? "text" : "number";
+          if (!secret && type !== "text") input.step = "any";
+          if (secret) input.autocomplete = "new-password";
+          if (type === "pin") { input.inputMode = "numeric"; input.dataset.osk = "pin"; input.maxLength = 8; }
           const val = type === "temp" ? toU(v[key]) : type === "delta" ? dToU(v[key]) : v[key];
           input.value = val == null ? "" : type === "temp" || type === "delta" ? +(+val).toFixed(2) : val;
-          if (type === "password") input.placeholder = v.password_set ? "•••• (set)" : "not set - anyone on the network can control the kiln";
+          if (type === "password") input.placeholder = v.password_set ? "•••• (set)" : "not set - anyone on the network can open the controller";
+          if (type === "pin") input.placeholder = v.control_pin_set ? "•••• (set)" : "not set - running firings are unlocked";
         }
         input.id = id;
         wrap.appendChild(input);
@@ -603,7 +638,7 @@ $("btn-save-settings").onclick = async () => {
   for (const el of $("settings-form").querySelectorAll("[data-key]")) {
     const { key, type } = el.dataset;
     if (type === "bool") body[key] = el.checked;
-    else if (type === "password") { if (el.value) body[key] = el.value.trim(); }
+    else if (type === "password" || type === "pin") { if (el.value) body[key] = el.value.trim(); }
     else if (type === "text") body[key] = el.value;
     else if (type === "pin") body[key] = el.value === "" ? null : parseInt(el.value, 10);
     else if (type.startsWith("select:")) body[key] = /^\d+$/.test(el.value) ? +el.value : el.value;
@@ -625,6 +660,7 @@ $("btn-restart").onclick = () => confirm("Restart the controller service?") &&
 function applySettings() {
   document.querySelectorAll(".u-deg").forEach((e) => (e.textContent = deg()));
   $("kiln-name").textContent = S.settings.kiln_name || "Kiln";
+  $("btn-lock").hidden = !S.settings.password_set;
   fillStartSelect();
   if (S.editing) renderSteps();
   if (S.status) renderStatus(S.status, S.status);
@@ -658,12 +694,28 @@ $("btn-join").onclick = async () => {
 };
 
 // ---------------------------------------------------------------- login --
-function showLogin() { $("login").hidden = false; $("login-pass").focus(); }
+function showLogin() {
+  if (!$("login").hidden) return;
+  $("login-pass").value = "";
+  $("login-err").hidden = true;
+  $("login").hidden = false;
+  $("login-pass").focus();
+}
 async function checkAuth() {
   const a = await fetch("/api/auth").then((r) => r.json()).catch(() => null);
+  if (a) {
+    // Digits-only passcode: number keypad on phones and the touchscreen.
+    $("login-pass").inputMode = a.numeric ? "numeric" : "text";
+    if (a.numeric) $("login-pass").dataset.osk = "pin"; else delete $("login-pass").dataset.osk;
+  }
   if (a && a.required && !a.authed) { showLogin(); return false; }
   return !!a;
 }
+async function lockNow() {
+  await fetch("/api/logout", { method: "POST" }).catch(() => {});
+  await checkAuth();
+}
+$("btn-lock").onclick = lockNow;
 $("login-form").onsubmit = async (e) => {
   e.preventDefault();
   const res = await fetch("/api/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: $("login-pass").value }) });

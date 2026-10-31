@@ -21,6 +21,7 @@
     <button role="tab" data-tab="history">History</button>
     <button role="tab" data-tab="settings">Settings</button>
   </nav>
+  <button id="btn-lock" class="btn small" type="button" title="Lock the screen" hidden>🔒 Lock</button>
   <span id="conn" class="conn" title="Connection">●</span>
 </header>
 
@@ -59,6 +60,7 @@
         </div>
         <p id="start-summary" class="muted small"></p>
       </div>
+      <p id="lock-note" class="muted small lock-note" hidden>🔒 Firing lock on: changes need the PIN. Emergency stop never does.</p>
       <div id="run-box" class="row wrap" hidden>
         <button id="btn-hold" class="btn">Hold</button>
         <button id="btn-skip" class="btn">Skip step</button>
@@ -169,10 +171,19 @@
 
 <div id="login" class="overlay" hidden>
   <form id="login-form" class="card">
-    <h2>Kiln login</h2>
-    <input id="login-pass" type="password" placeholder="Password" autocomplete="current-password">
-    <button class="btn primary">Log in</button>
-    <p id="login-err" class="error" hidden>Wrong password</p>
+    <h2>🔒 Enter passcode</h2>
+    <input id="login-pass" type="password" placeholder="Passcode" autocomplete="current-password" aria-label="Passcode">
+    <button class="btn primary">Unlock</button>
+    <p id="login-err" class="error" hidden>Wrong passcode</p>
+  </form>
+</div>
+
+<div id="pin-dialog" class="overlay" hidden>
+  <form id="pin-form" class="card">
+    <h2>🔒 Firing lock</h2>
+    <p id="pin-msg" class="muted small"></p>
+    <input id="pin-input" type="password" inputmode="numeric" maxlength="8" autocomplete="off" data-osk="pin" placeholder="PIN" aria-label="Firing lock PIN">
+    <div class="row"><button type="button" id="pin-cancel" class="btn grow">Cancel</button><button class="btn primary grow">Confirm</button></div>
   </form>
 </div>
 

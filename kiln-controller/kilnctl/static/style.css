@@ -182,6 +182,11 @@ section > .card { margin-top: 1rem; }
 
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: grid; place-items: center; z-index: 50; padding: 1rem; }
 .overlay form { width: min(340px, 100%); display: grid; gap: .7rem; }
+.overlay h2 { margin: 0; }
+#pin-dialog { z-index: 52; }
+.lock-note { margin: 0 0 .5rem; }
+#btn-lock { margin-left: auto; }
+#btn-lock + .conn { margin-left: 0; }
 .toast {
   position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%); z-index: 60;
   background: var(--text); color: var(--bg); padding: .6rem 1rem; border-radius: 8px; max-width: calc(100% - 2rem);
@@ -207,7 +212,7 @@ section > .card { margin-top: 1rem; }
 .kiosk .controls .btn.estop, .kiosk .controls .estop + p { display: none; }
 .kiosk main { padding: .6rem; max-width: none; }
 .kiosk-bar {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; padding: 8px 10px;
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 55; /* above the lock screen */ padding: 8px 10px;
   background: var(--surface); border-top: 1px solid var(--border);
 }
 .kiosk-bar .btn.estop { margin: 0; padding: .7rem; min-height: 56px; }
@@ -238,7 +243,7 @@ section > .card { margin-top: 1rem; }
   background: var(--surface-2); border-top: 1px solid var(--border);
   display: grid; gap: 6px; box-shadow: 0 -6px 20px rgba(0,0,0,.35);
 }
-.osk-num { left: auto; width: min(340px, 100%); border-left: 1px solid var(--border); border-top-left-radius: 12px; }
+.osk-num, .osk-pin { left: auto; width: min(340px, 100%); border-left: 1px solid var(--border); border-top-left-radius: 12px; }
 .osk-row { display: flex; gap: 6px; }
 .osk button {
   flex: 1 1 0; min-height: 52px; font: inherit; font-size: 1.2rem; color: var(--text);
@@ -267,3 +272,9 @@ body.osk-open { padding-bottom: 340px; }
   .kiosk .temp { font-size: 5rem; }
   .kiosk .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+/* On-screen keyboards sit above the E-stop bar so it is never covered */
+.kiosk .osk { bottom: 76px; }
+.kiosk body.osk-open { padding-bottom: 420px; }
+/* Lock screen / PIN dialog: shift left so the side keypad doesn't cover it */
+.kiosk body.osk-open .overlay { justify-items: start; padding-left: max(16px, calc(50vw - 360px)); }
+@media (max-width: 760px) { .kiosk body.osk-open .overlay { align-items: start; padding-top: 12px; } }

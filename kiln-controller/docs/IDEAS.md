@@ -20,7 +20,8 @@
 | Firing **history** with charts and CSV export | Compare firings and diagnose problems |
 | Profile **import/export** (JSON) | Share schedules with other users |
 | **Wi-Fi setup hotspot** + Wi-Fi page in the UI | Works with no keyboard or monitor |
-| Optional **password login** | Stops anyone on the Wi-Fi from starting your kiln |
+| Optional **interface passcode** with touchscreen auto-lock | Stops anyone on the Wi-Fi, or walking past, from using the kiln |
+| Optional **firing lock PIN** for changes to a running firing (never for E-stop) | Nobody can stop or skip a firing by accident or without permission |
 | **Simulation mode** | Try profiles and learn the UI with no hardware |
 | Optional **touchscreen kiosk** with on-screen keyboard and pinned E-stop bar | Control the kiln at the kiln, no phone needed |
 

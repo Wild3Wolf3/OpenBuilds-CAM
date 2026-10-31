@@ -23,6 +23,7 @@
   // ---- on-screen keyboard -----------------------------------------------
   const LAYOUTS = {
     num: [["7", "8", "9"], ["4", "5", "6"], ["1", "2", "3"], ["-", "0", "."], ["⌫", "Done"]],
+    pin: [["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"], ["⌫", "0", "Done"]],
     text: [
       ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
       ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
@@ -42,10 +43,11 @@
     layout = name;
     kb.className = "osk osk-" + name;
     kb.innerHTML = "";
-    if (name === "num") {
+    if (name === "num" || name === "pin") {
       const d = document.createElement("div");
       d.className = "osk-display";
-      d.textContent = buf || orig || "0";
+      if (name === "pin") d.textContent = buf ? "•".repeat(buf.length) : "PIN";
+      else d.textContent = buf || orig || "0";
       d.classList.toggle("placeholder", !buf);
       kb.appendChild(d);
     }
@@ -71,8 +73,19 @@
     e.stopPropagation(); // keys are re-rendered, so the outside-tap check below would misfire
     if (!b || !target) return;
     const k = b.dataset.k;
-    if (k === "Done") return close();
+    if (k === "Done") {
+      const form = layout === "pin" && target.form;
+      close();
+      if (form) form.requestSubmit();  // PIN pads submit straight away
+      return;
+    }
     if (k === "⇧") { shift = !shift; return render(layout); }
+    if (layout === "pin") {
+      buf = k === "⌫" ? buf.slice(0, -1) : (buf + k).slice(0, 8);
+      target.value = buf;
+      target.dispatchEvent(new Event("input", { bubbles: true }));
+      return render("pin");
+    }
     if (layout === "num") {
       if (k === "⌫") buf = buf.slice(0, -1);
       else if (k === "-") buf = buf.startsWith("-") ? buf.slice(1) : "-" + buf;
@@ -94,7 +107,7 @@
     target = el;
     buf = "";
     orig = el.value;
-    render(el.type === "number" ? "num" : "text");
+    render(el.dataset.osk || (el.type === "number" ? "num" : "text"));
     kb.hidden = false;
     document.body.classList.add("osk-open");
     // Text keyboard is tall: put the field at the top of the screen, above it.
@@ -121,4 +134,15 @@
   document.addEventListener("pointerdown", (e) => {
     if (!kb.hidden && !kb.contains(e.target) && e.target !== target) close();
   });
+
+  // ---- auto-lock after idle ----------------------------------------------
+  let lastTouch = Date.now();
+  for (const ev of ["pointerdown", "keydown"]) document.addEventListener(ev, () => (lastTouch = Date.now()), true);
+  setInterval(() => {
+    const mins = S.settings.kiosk_lock_minutes;
+    if (mins > 0 && S.settings.password_set && $("login").hidden && Date.now() - lastTouch > mins * 60000) {
+      close();
+      lockNow();
+    }
+  }, 10000);
 })();

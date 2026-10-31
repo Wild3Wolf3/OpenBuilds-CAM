@@ -69,12 +69,28 @@ DEFAULTS = {
 
     # --- web ---------------------------------------------------------------
     "http_port": 80,
-    "password_hash": "",             # empty = no login required
+    "password_hash": "",             # interface passcode; empty = no login required
+    "password_numeric": False,       # passcode is digits only -> touchscreen shows a keypad
+    "control_pin_hash": "",          # firing lock PIN; empty = running firings unlocked
+    "kiosk_lock_minutes": 0,         # touchscreen re-locks after this idle time (0 = never)
     "secret": "",                    # cookie signing key (generated)
 }
 
 # Keys the web UI may change. Everything else is file-only.
-EDITABLE = set(DEFAULTS) - {"secret", "password_hash"}
+PRIVATE = {"secret", "password_hash", "password_numeric", "control_pin_hash"}
+EDITABLE = set(DEFAULTS) - PRIVATE
+
+
+def _hash(secret):
+    salt = secrets.token_hex(16)
+    digest = hashlib.pbkdf2_hmac("sha256", secret.encode(), salt.encode(), 200_000)
+    return salt + "$" + digest.hex()
+
+
+def _matches(stored, secret):
+    salt, digest = stored.split("$", 1)
+    test = hashlib.pbkdf2_hmac("sha256", secret.encode(), salt.encode(), 200_000)
+    return hmac.compare_digest(test.hex(), digest)
 
 
 class Config:
@@ -117,26 +133,33 @@ class Config:
 
     def public(self):
         """Settings as shown to the UI (no secrets)."""
-        out = {k: v for k, v in self.values.items() if k not in ("secret", "password_hash")}
+        out = {k: v for k, v in self.values.items() if k not in PRIVATE}
         out["password_set"] = bool(self.values["password_hash"])
+        out["control_pin_set"] = bool(self.values["control_pin_hash"])
         return out
 
     def set_password(self, password):
-        if password:
-            salt = secrets.token_hex(16)
-            digest = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 200_000)
-            self.values["password_hash"] = salt + "$" + digest.hex()
-        else:
-            self.values["password_hash"] = ""
+        """Interface passcode: any text, or digits for keypad entry."""
+        if password and len(password) < 4:
+            raise ValueError("passcode must be at least 4 characters")
+        self.values["password_hash"] = _hash(password) if password else ""
+        self.values["password_numeric"] = password.isdigit()
         self.save()
 
     def check_password(self, password):
         stored = self.values["password_hash"]
-        if not stored:
-            return True
-        salt, digest = stored.split("$", 1)
-        test = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 200_000)
-        return hmac.compare_digest(test.hex(), digest)
+        return not stored or _matches(stored, password)
+
+    def set_control_pin(self, pin):
+        """Firing lock PIN: 4-8 digits, or empty to remove."""
+        if pin and not (pin.isdigit() and 4 <= len(pin) <= 8):
+            raise ValueError("firing lock PIN must be 4-8 digits")
+        self.values["control_pin_hash"] = _hash(pin) if pin else ""
+        self.save()
+
+    def check_control_pin(self, pin):
+        stored = self.values["control_pin_hash"]
+        return not stored or _matches(stored, pin)
 
     def save(self):
         tmp = self.path + ".tmp"

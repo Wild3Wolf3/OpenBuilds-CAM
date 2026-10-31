@@ -21,6 +21,9 @@ STATIC = os.path.join(os.path.dirname(__file__), "static")
 COOKIE = "kiln_auth"
 RUN_ID = re.compile(r"^[0-9]{8}-[0-9]{6}$")
 PUBLIC_PATHS = ("/api/login", "/api/auth")
+LOOPBACK = ("127.0.0.1", "::1")
+PIN_MAX_TRIES = 5
+PIN_LOCKOUT = 60  # seconds after too many wrong PINs
 
 
 def _token(cfg):
@@ -38,6 +41,9 @@ def _authed(request):
 async def auth_middleware(request, handler):
     path = request.path
     protected = path.startswith(("/api/", "/ws", "/camera/")) and path not in PUBLIC_PATHS
+    # The touchscreen can always hit E-stop, even while its screen is locked.
+    if path == "/api/firing/estop" and request.remote in LOOPBACK:
+        protected = False
     if protected and not _authed(request):
         raise web.HTTPUnauthorized(text="login required")
     return await handler(request)
@@ -65,8 +71,38 @@ async def _json(request):
 # ---------------------------------------------------------------------------
 
 async def auth_status(request):
-    return web.json_response({"required": bool(request.app["cfg"]["password_hash"]),
+    cfg = request.app["cfg"]
+    return web.json_response({"required": bool(cfg["password_hash"]),
+                              "numeric": bool(cfg["password_hash"]) and cfg["password_numeric"],
                               "authed": _authed(request)})
+
+
+async def require_control_pin(request, body):
+    """While a firing runs, changing it needs the firing lock PIN (if one is set).
+    Emergency stop never goes through here."""
+    app, cfg = request.app, request.app["cfg"]
+    if not cfg["control_pin_hash"] or app["ctl"].state not in ACTIVE:
+        return
+    lock = app["pin_lock"]
+    now = time.monotonic()
+    if now < lock["until"]:
+        raise _json_error(429, f"Too many wrong PINs - try again in {int(lock['until'] - now) + 1} s",
+                          pin_required=True)
+    pin = str(body.get("pin") or request.headers.get("X-Kiln-Pin") or "")
+    if not pin:
+        raise _json_error(403, "Firing lock PIN required", pin_required=True)
+    if not cfg.check_control_pin(pin):
+        await asyncio.sleep(0.5)
+        lock["fails"] += 1
+        if lock["fails"] >= PIN_MAX_TRIES:
+            lock["fails"], lock["until"] = 0, now + PIN_LOCKOUT
+        raise _json_error(403, "Wrong PIN", pin_required=True)
+    lock["fails"] = 0
+
+
+def _json_error(status, message, **extra):
+    exc = {403: web.HTTPForbidden, 429: web.HTTPTooManyRequests}[status]
+    return exc(text=json.dumps({"error": message, **extra}), content_type="application/json")
 
 
 async def login(request):
@@ -101,8 +137,10 @@ async def get_run(request):
 async def firing_action(request):
     ctl = request.app["ctl"]
     action = request.match_info["action"]
+    body = await _json(request) if request.can_read_body else {}
+    if action in ("stop", "hold", "resume", "skip"):
+        await require_control_pin(request, body)
     if action == "start":
-        body = await _json(request)
         if body.get("profile_id"):
             profile = request.app["store"].get(body["profile_id"])
             if not profile:
@@ -225,11 +263,21 @@ async def get_settings(request):
 async def put_settings(request):
     cfg, ctl = request.app["cfg"], request.app["ctl"]
     body = await _json(request)
+    await require_control_pin(request, body)
+    body.pop("pin", None)
     new_password = body.pop("new_password", None)
+    new_pin = body.pop("new_control_pin", None)
     body.pop("password_set", None)
+    body.pop("control_pin_set", None)
+    if new_password and len(new_password) < 4:
+        raise ValueError("passcode must be at least 4 characters")
+    if new_pin and not (new_pin.isdigit() and 4 <= len(new_pin) <= 8):
+        raise ValueError("firing lock PIN must be 4-8 digits")
     cfg.update(body)
     if new_password is not None:
         cfg.set_password(new_password)
+    if new_pin is not None:
+        cfg.set_control_pin(new_pin)
     ctl.pid.kp, ctl.pid.ki, ctl.pid.kd = cfg["pid_kp"], cfg["pid_ki"], cfg["pid_kd"]
     resp = web.json_response(cfg.public())
     if new_password is not None:
@@ -338,6 +386,7 @@ def build_app(cfg, ctl, store, camera):
     app = web.Application(middlewares=[error_middleware, auth_middleware])
     app["cfg"], app["ctl"], app["store"], app["camera"] = cfg, ctl, store, camera
     app["sockets"] = set()
+    app["pin_lock"] = {"fails": 0, "until": 0.0}
     ctl.listeners.append(make_broadcaster(app))
     r = app.router
     r.add_get("/", index)
