@@ -61,12 +61,13 @@ and an on-screen keyboard. Enable it with `KILN_TOUCHSCREEN=1` when building the
 
 | # | Part | Qty | Notes | ≈ Price |
 |---|------|-----|-------|---------|
-| 26 | **Raspberry Pi Touch Display 2 (7", 720×1280)** *(recommended)*, or the original official 7" Touch Display (800×480), or a 5"/7" capacitive HDMI touchscreen (e.g. Waveshare, 800×480 or 1024×600) | 1 | The official displays connect by DSI ribbon, so the camera keeps the CSI port. HDMI screens also need a USB cable for touch. | $45–65 |
+| 26 | **Touchscreen.** Options: a **10.1" 1280×800 IPS capacitive HDMI touchscreen** (e.g. Waveshare 10.1" HDMI LCD, recommended for easy reading across the studio), the Raspberry Pi Touch Display 2 (7", DSI), the original 7" official display (800×480, DSI), or a 5–7" HDMI touchscreen | 1 | The UI has tuned layouts for 1280×800, 1024×600 and 800×480, landscape or portrait. **HDMI screens:** touch connects by USB to the Pi, and a Pi 4 needs a **micro-HDMI to HDMI** cable. Many 10.1" panels need their own 5 V/12 V supply; check the listing. | $45–110 |
+| 26a | Micro-HDMI to HDMI cable (0.5–1 m) + USB-A to the screen's touch port (for HDMI screens) | 1 | Use right-angle plugs if the Pi sits behind the screen | $8–12 |
 | 27 | Display mounting: a panel-mount bezel or case that fits a cut-out in the enclosure door, or a separate small case on an arm | 1 | Keep the screen away from kiln heat. The Pi and display are rated to about 50 °C. | $10–25 |
 | 28 | Longer DSI cable (200–500 mm), if the display isn't directly on the Pi | 1 | A Pi 5 needs the "standard-to-mini" DSI cable | $5–8 |
 | 29 | Bigger power supply: **5 V 3 A** minimum for a Pi 4 + display, or the **27 W (5 V 5 A) USB-C PSU** for a Pi 5 | — | Official displays are powered from the Pi's 5 V header pins (use pin 4 if pin 2 already feeds the SSR driver) | +$5 |
 
-Adds **≈ $60–100** to the build.
+Adds **≈ $60–150** to the build. A 10.1" HDMI screen is at the top of that range.
 
 ## F. Optional extras
 
@@ -83,4 +84,4 @@ Adds **≈ $60–100** to the build.
 * Controller + switching + enclosure (one 40 A circuit): **≈ $300–450**
 * Camera: **+ $40–60**
 * Independent over-temperature limit: **+ $35–80** (recommended)
-* Touchscreen: **+ $60–100** (optional)
+* Touchscreen: **+ $60–150** (optional)

@@ -106,6 +106,12 @@ buttons, a pinned EMERGENCY STOP bar on every page, a number pad for temperature
 full keyboard for names and Wi-Fi passwords. If you set a login password, enter it once on the
 screen; the login lasts 90 days.
 
+Tested layouts: **10.1" 1280×800** (dashboard, chart and camera on one screen, shown below),
+1024×600, 800×480 and portrait. On a 10.1" HDMI screen, plug its USB touch cable into the Pi. It
+works without drivers, and the screen's resolution is picked up automatically over HDMI.
+
+![10.1-inch touchscreen](docs/screenshots/touchscreen-10in-dashboard.png)
+
 Rotation: the Touch Display 2 is portrait by default. For landscape, add
 `video=DSI-1:720x1280@60,rotate=270` to the end of the line in `/boot/firmware/cmdline.txt`. For
 other screens, follow the screen maker's setup guide (some need a `dtoverlay=` line in

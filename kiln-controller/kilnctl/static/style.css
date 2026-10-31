@@ -205,7 +205,7 @@ section > .card { margin-top: 1rem; }
 .kiosk .steps .del button { font-size: 1.6rem; padding: .2rem .6rem; }
 .kiosk input[type="checkbox"] { width: 26px; height: 26px; min-height: 0; }
 .kiosk .controls .btn.estop, .kiosk .controls .estop + p { display: none; }
-.kiosk main { padding: .6rem; }
+.kiosk main { padding: .6rem; max-width: none; }
 .kiosk-bar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; padding: 8px 10px;
   background: var(--surface); border-top: 1px solid var(--border);
@@ -253,3 +253,17 @@ section > .card { margin-top: 1rem; }
 }
 .osk-display.placeholder { color: var(--muted); }
 body.osk-open { padding-bottom: 340px; }
+/* 10.1" and similar wide panels (1280x800): camera fills the space under the readout */
+@media (max-height: 800px) and (min-width: 1150px) {
+  .kiosk .grid-dash {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas: "readout controls" "readout chart" "cam chart";
+  }
+  .kiosk .readout { grid-area: readout; }
+  .kiosk .controls { grid-area: controls; }
+  .kiosk .chart-card { grid-area: chart; }
+  .kiosk .cam-card { grid-area: cam; }
+  .kiosk .temp { font-size: 5rem; }
+  .kiosk .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

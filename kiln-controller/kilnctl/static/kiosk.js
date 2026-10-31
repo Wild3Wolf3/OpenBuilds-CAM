@@ -8,7 +8,9 @@
   document.documentElement.classList.add("kiosk");
   // Landscape panels (800x480 to 1280x800): size the live chart to fit beside the controls.
   if (window.innerHeight <= 800 && window.innerWidth >= 700) {
-    $("chart").setAttribute("height", String(Math.min(380, Math.max(160, window.innerHeight - 305))));
+    const wide = window.innerWidth >= 1150;  // chart runs the full height beside readout + camera
+    $("chart").setAttribute("height", String(wide ? window.innerHeight - 290
+      : Math.min(380, Math.max(160, window.innerHeight - 305))));
   }
 
   // ---- always-visible E-stop -------------------------------------------
